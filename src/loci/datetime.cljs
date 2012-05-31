@@ -15,15 +15,19 @@
                 (js->clj gdate-time-format/Format))))
 
 (defn- resolve-pattern [pattern]
-  (if (keyword? pattern)
-    (get number-formats pattern)
-    pattern))
+  (cond
+    (contains? number-formats pattern) (get number-formats pattern)
+    (number? pattern) (do (assert (some (fn [[k v]] (== v pattern))
+                                        number-formats)
+                                  (str "Invalid number format: " pattern))
+                          pattern)
+    :else (name pattern)))
 
 
 (defn format [date pattern & [tz]]
   "Format a given date, based on the current locale."
-  {:pre [(or (number? pattern)
-             (keyword? pattern)
-             (string? pattern))]}
+    {:pre [(or (number? pattern)
+               (keyword? pattern)
+               (string? pattern))]}
   (let [formatter (goog.i18n.DateTimeFormat. (resolve-pattern pattern))]
     (.format formatter date tz)))
