@@ -32,13 +32,13 @@
                (string? pattern))]}
   (let [formatter (goog.i18n.DateTimeFormat. (resolve-pattern pattern))]
     (.format formatter date tz)))
-    
-(defn parse [string pattern]
-  "Parse string, using given pattern "
-  {:pre [(or (number? pattern)
-             (keyword? pattern)
-             (string? pattern))]}
-  (let [parser (goog.i18n.DateTimeParse (resolve-pattern pattern))
-        date (goog.i18n.DateTime.)]
-    (.parse parser date)
+
+
+(defn parse [text pattern & {:keys [offset strict]}]
+  "Parse a given string, using a specified pattern."
+  (let [parser (goog.i18n.DateTimeParse. (resolve-pattern pattern))
+        date   (goog.date.DateTime.)]
+    (if strict
+      (.parse parser text date offset)
+      (.strictParse parser text date offset))
     date))
