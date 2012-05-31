@@ -2,7 +2,8 @@
   (:require [clojure.string :as string]
             [goog.object :as gobject]
             [goog.i18n.DateTimeParse :as gdate-time-parse]
-            [goog.i18n.DateTimeFormat :as gdate-time-format]))
+            [goog.i18n.DateTimeFormat :as gdate-time-format]
+            [goog.date.DateTime :as gdate-time]))
 
 
 (defn- keywordize [s]
@@ -31,3 +32,13 @@
                (string? pattern))]}
   (let [formatter (goog.i18n.DateTimeFormat. (resolve-pattern pattern))]
     (.format formatter date tz)))
+    
+(defn parse [string pattern]
+  "Parse string, using given pattern "
+  {:pre [(or (number? pattern)
+             (keyword? pattern)
+             (string? pattern))]}
+  (let [parser (goog.i18n.DateTimeParse (resolve-pattern pattern))
+        date (goog.i18n.DateTime.)]
+    (.parse parser date)
+    date))
