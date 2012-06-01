@@ -16,6 +16,9 @@
                 (js->clj gdate-time-format/Format))))
 
 (defn- resolve-pattern [pattern]
+  {:pre [(or (number? pattern)
+             (keyword? pattern)
+             (string? pattern))]}
   (cond
     (contains? number-formats pattern) (get number-formats pattern)
     (number? pattern) (do (assert (some (fn [[k v]] (== v pattern))
@@ -25,20 +28,23 @@
     :else (name pattern)))
 
 
+(defn formatter [pattern]
+  (goog.i18n.DateTimeFormat. (resolve-pattern pattern)))
+
 (defn format [date pattern & [tz]]
   "Format a given date, based on the current locale."
-    {:pre [(or (number? pattern)
-               (keyword? pattern)
-               (string? pattern))]}
-  (let [formatter (goog.i18n.DateTimeFormat. (resolve-pattern pattern))]
-    (.format formatter date tz)))
+  (let [f (formatter pattern)]
+    (.format f date tz)))
 
+
+(defn parser [pattern]
+  (goog.i18n.DateTimeParse. (resolve-pattern pattern)))
 
 (defn parse [text pattern & {:keys [offset strict]}]
   "Parse a given string, using a specified pattern."
-  (let [parser (goog.i18n.DateTimeParse. (resolve-pattern pattern))
-        date   (goog.date.DateTime.)]
+  (let [p (parser pattern)
+        date (goog.date.DateTime.)]
     (if strict
-      (.parse parser text date offset)
-      (.strictParse parser text date offset))
+      (.parse p text date offset)
+      (.strictParse p text date offset))
     date))
